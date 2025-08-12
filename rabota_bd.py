@@ -1,57 +1,112 @@
 import psycopg
-#from psycopg import sql
+import os
+from psycopg import sql
 
-conn = psycopg.connect(dbname="farmers_markets",
-                      host="localhost",
-                      user="postgres",
-                      password="Astana3102",
-                      port="5432")
+PG_HOST=<postgres hostname>
+PG_PORT=<postgres port>
+PG_USER=<postgres database user>
+PG_PASSWORD=<postgres database password>
+PG_DATABASE=<database>
 
-cur = conn.cursor()
+from dotenv import load_dotenv
+
+load_dotenv()  # Required to load the previously defined environment variables
+
+# Create connection to postgres
+connection = psycopg.connect(host=os.environ.get('PG_HOST'),
+                              port=os.environ.get('PG_PORT'),
+                              user=os.environ.get('PG_USER'),
+                              password=os.environ.get('PG_PASSWORD'),
+                              dbname=os.environ.get('PG_DATABASE')
+                              )
+connection.autocommit = True  # Ensure data is added to the database immediately after write commands
+cur = connection.cursor()
+
+def is_table_notempty(cur, table_name):     # Проверяет, пуста я ли таблица
+    query = sql.SQL("SELECT COUNT(*) FROM {}").format(sql.Identifier(table_name))
+    cur.execute(query)
+    return cur.fetchone()[0] != 0
+
 
 with open('C:/Users/User/test/markets.csv', 'r') as f:
-    with cur.copy("COPY markets (FMID, market_name, website, facebook, twitter, youtube, other_media) FROM STDIN WITH (FORMAT csv)") as copy:
-        while data := f.read(1000000):  # Читаем файл частями
-            copy.write(data)
-    
+  if is_table_notempty(cur, "markets"):     # Проверяет, пуста я ли таблица
+      with cur.copy("COPY markets (FMID, market_name, website, facebook, twitter, youtube, other_media) FROM STDIN WITH (FORMAT csv)") as copy:
+          while data := f.read(1000000):  # Читаем файл частями
+              copy.write(data)
+  else:
+        print("Таблица markets не пуста, загрузка пропущена")
+
+    conn.commit()  # Фиксируем изменения
+
 with open('C:/Users/User/test/states.csv', 'r') as f:
-    with cur.copy("COPY states (state_id, state_full) FROM STDIN WITH (FORMAT csv)") as copy:
-        while data := f.read(1000000):  # Читаем файл частями
-            copy.write(data)
+  if is_table_notempty(cur, "states"): 
+      with cur.copy("COPY states (state_id, state_full) FROM STDIN WITH (FORMAT csv)") as copy:
+          while data := f.read(1000000):  # Читаем файл частями
+              copy.write(data)
+  else:
+        print("Таблица states не пуста, загрузка пропущена")
+
+    conn.commit()  # Фиксируем изменения
 
 with open('C:/Users/User/test/county.csv', 'r') as f:
-    with cur.copy("COPY county (county_id, county_full) FROM STDIN WITH (FORMAT csv)") as copy:
-        while data := f.read(1000000):  # Читаем файл частями
-            copy.write(data)
+  if is_table_notempty(cur, "county"): 
+      with cur.copy("COPY county (county_id, county_full) FROM STDIN WITH (FORMAT csv)") as copy:
+          while data := f.read(1000000):  # Читаем файл частями
+              copy.write(data)
+  else:
+        print("Таблица county не пуста, загрузка пропущена")
+
+    conn.commit()  # Фиксируем изменения
 
 with open('C:/Users/User/test/address_market.csv', 'r') as f:
-    with cur.copy("COPY address_market (FMID, street, county_id, states_id, zip) FROM STDIN WITH (FORMAT csv)") as copy:
-        while data := f.read(1000000):  # Читаем файл частями
-            copy.write(data)
+   if is_table_notempty(cur, "address_market"):
+      with cur.copy("COPY address_market (FMID, street, county_id, states_id, zip) FROM STDIN WITH (FORMAT csv)") as copy:
+          while data := f.read(1000000):  # Читаем файл частями
+              copy.write(data)
+   else:
+        print("Таблица address_market не пуста, загрузка пропущена")
+
+    conn.commit()  # Фиксируем изменения
 
 with open('C:/Users/User/test/pay.csv', 'r') as f:
-    with cur.copy("COPY pay (pay_id, name_of_pay) FROM STDIN WITH (FORMAT csv)") as copy:
-        while data := f.read(1000000):  # Читаем файл частями
-            copy.write(data)
+  if is_table_notempty(cur, "pay"):
+      with cur.copy("COPY pay (pay_id, name_of_pay) FROM STDIN WITH (FORMAT csv)") as copy:
+          while data := f.read(1000000):  # Читаем файл частями
+              copy.write(data)
+  else:
+        print("Таблица pay не пуста, загрузка пропущена")
 
+    conn.commit()  # Фиксируем изменения
 
 with open('C:/Users/User/test/markets_pay.csv', 'r') as f:
-    with cur.copy("COPY markets_pay (markets_pay_id, FMID, pay_id) FROM STDIN WITH (FORMAT csv)") as copy:
-        while data := f.read(10000):  # Читаем файл частями
-            copy.write(data)
+  if is_table_notempty(cur, "markets_pay"):
+      with cur.copy("COPY markets_pay (markets_pay_id, FMID, pay_id) FROM STDIN WITH (FORMAT csv)") as copy:
+          while data := f.read(10000):  # Читаем файл частями
+              copy.write(data)
+  else:
+      print("Таблица markets_pay не пуста, загрузка пропущена")
+
+  conn.commit()  # Фиксируем изменения
 
 with open('C:/Users/User/test/categorias.csv', 'r') as f:
-    with cur.copy("COPY categorias (categorias_id, categorias_name) FROM STDIN WITH (FORMAT csv)") as copy:
-        while data := f.read(10000):  # Читаем файл частями
-            copy.write(data)
+  if is_table_notempty(cur, "categorias"):
+      with cur.copy("COPY categorias (categorias_id, categorias_name) FROM STDIN WITH (FORMAT csv)") as copy:
+          while data := f.read(10000):  # Читаем файл частями
+              copy.write(data)
+  else:
+      print("Таблица categorias не пуста, загрузка пропущена")
+
+  conn.commit()  # Фиксируем изменения
 
 with open('C:/Users/User/test/market_categories.csv', 'r') as f:
-    with cur.copy("COPY market_categories (market_categories_id, FMID, categorias_id) FROM STDIN WITH (FORMAT csv)") as copy:
-        while data := f.read(10000):  # Читаем файл частями
-            copy.write(data)
+  if is_table_notempty(cur, "market_categories"):
+      with cur.copy("COPY market_categories (market_categories_id, FMID, categorias_id) FROM STDIN WITH (FORMAT csv)") as copy:
+          while data := f.read(10000):  # Читаем файл частями
+              copy.write(data)
+    else:
+      print("Таблица market_categories не пуста, загрузка пропущена")
 
-
-
+  conn.commit()  # Фиксируем изменения
 
 def display_menu():
     print("\nДобро пожаловать в приложение! Выберите пункт меню:")
@@ -250,3 +305,4 @@ while True:
     input("\nНажмите Enter для продолжения...")
     
 conn.close()
+
