@@ -68,14 +68,14 @@ with open('market_categories.csv', 'r') as f:
 
 """
 
-def is_table_notempty(cur, table_name):     # Проверяет, пуста я ли таблица
+def is_table_empty(cur, table_name):     # Проверяет, пуста я ли таблица
     query = sql.SQL("SELECT COUNT(*) FROM {}").format(sql.Identifier(table_name))
     cur.execute(query)
-    return cur.fetchone()[0] != 0
+    return cur.fetchone()[0] == 0
 
 
 with open('markets.csv', 'r') as f:
-  if is_table_notempty(cur, "markets"):     # Проверяет, пуста я ли таблица
+  if is_table_empty(cur, "markets"):     # Проверяет, пуста я ли таблица
       with cur.copy("COPY markets (FMID, market_name, website, facebook, twitter, youtube, other_media) FROM STDIN WITH (FORMAT csv)") as copy:
           while data := f.read(1000000):  # Читаем файл частями
               copy.write(data)
@@ -85,7 +85,7 @@ with open('markets.csv', 'r') as f:
 conn.commit()  # Фиксируем изменения
 
 with open('states.csv', 'r') as f:
-  if is_table_notempty(cur, "states"): 
+  if is_table_empty(cur, "states"): 
       with cur.copy("COPY states (state_id, state_full) FROM STDIN WITH (FORMAT csv)") as copy:
           while data := f.read(1000000):  # Читаем файл частями
               copy.write(data)
@@ -95,7 +95,7 @@ with open('states.csv', 'r') as f:
 conn.commit()  # Фиксируем изменения
 
 with open('county.csv', 'r') as f:
-  if is_table_notempty(cur, "county"): 
+  if is_table_empty(cur, "county"): 
       with cur.copy("COPY county (county_id, county_full) FROM STDIN WITH (FORMAT csv)") as copy:
           while data := f.read(1000000):  # Читаем файл частями
               copy.write(data)
@@ -105,7 +105,7 @@ with open('county.csv', 'r') as f:
 conn.commit()  # Фиксируем изменения
 
 with open('address_market.csv', 'r') as f:
-   if is_table_notempty(cur, "address_market"):
+   if is_table_empty(cur, "address_market"):
       with cur.copy("COPY address_market (FMID, street, county_id, states_id, zip) FROM STDIN WITH (FORMAT csv)") as copy:
           while data := f.read(1000000):  # Читаем файл частями
               copy.write(data)
@@ -114,8 +114,8 @@ with open('address_market.csv', 'r') as f:
 
 conn.commit()  # Фиксируем изменения
 
-with open('test/pay.csv', 'r') as f:
-  if is_table_notempty(cur, "pay"):
+with open('pay.csv', 'r') as f:
+  if is_table_empty(cur, "pay"):
       with cur.copy("COPY pay (pay_id, name_of_pay) FROM STDIN WITH (FORMAT csv)") as copy:
           while data := f.read(1000000):  # Читаем файл частями
               copy.write(data)
@@ -124,8 +124,8 @@ with open('test/pay.csv', 'r') as f:
 
 conn.commit()  # Фиксируем изменения
 
-with open('test/markets_pay.csv', 'r') as f:
-  if is_table_notempty(cur, "markets_pay"):
+with open('markets_pay.csv', 'r') as f:
+  if is_table_empty(cur, "markets_pay"):
       with cur.copy("COPY markets_pay (markets_pay_id, FMID, pay_id) FROM STDIN WITH (FORMAT csv)") as copy:
           while data := f.read(10000):  # Читаем файл частями
               copy.write(data)
@@ -135,7 +135,7 @@ with open('test/markets_pay.csv', 'r') as f:
 conn.commit()  # Фиксируем изменения
 
 with open('categorias.csv', 'r') as f:
-  if is_table_notempty(cur, "categorias"):
+  if is_table_empty(cur, "categorias"):
       with cur.copy("COPY categorias (categorias_id, categorias_name) FROM STDIN WITH (FORMAT csv)") as copy:
           while data := f.read(10000):  # Читаем файл частями
               copy.write(data)
@@ -145,7 +145,7 @@ with open('categorias.csv', 'r') as f:
 conn.commit()  # Фиксируем изменения
 
 with open('market_categories.csv', 'r') as f:
-  if is_table_notempty(cur, "market_categories"):
+  if is_table_empty(cur, "market_categories"):
       with cur.copy("COPY market_categories (market_categories_id, FMID, categorias_id) FROM STDIN WITH (FORMAT csv)") as copy:
           while data := f.read(10000):  # Читаем файл частями
               copy.write(data)
